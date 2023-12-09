@@ -11,8 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:8081")
@@ -24,6 +23,37 @@ public class CardController {
     CardRepository cardRepository;
     @Autowired
     TagRepository tagRepository;
+
+    @GetMapping("/cards")
+    public ResponseEntity<List<CardResponseDTO>> getAllCards() {
+        try {
+            List<Card> allCards = cardRepository.findAll();
+            List<CardResponseDTO> cardResponseDTOs = allCards.stream()
+                    .map(this::convertToCardResponseDTO)
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/cards/{id}")
+    public ResponseEntity<CardResponseDTO> getCardById(@PathVariable Long id) {
+        try {
+            Optional<Card> cardData = cardRepository.findById(id);
+
+            if (cardData.isPresent()) {
+                Card card = cardData.get();
+                CardResponseDTO cardResponseDTO = convertToCardResponseDTO(card);
+                return new ResponseEntity<>(cardResponseDTO, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     @PostMapping("/cards")
     public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardDTO cardDTO){
@@ -44,8 +74,15 @@ public class CardController {
                 .map(Tag::getName)
                 .collect(Collectors.toSet());
 
-        return new CardResponseDTO(card.getId(), card.getQuestion(), card.getAnswer(), tagNames);
+        CardResponseDTO cardResponseDTO = new CardResponseDTO();
+        cardResponseDTO.setId(card.getId()); // id 설정
+        cardResponseDTO.setQuestion(card.getQuestion());
+        cardResponseDTO.setAnswer(card.getAnswer());
+        cardResponseDTO.setTags(tagNames);
+
+        return cardResponseDTO;
     }
+
 
 
     private Set<Tag> convertTagNamesToTags(Set<String> tagNames) {
