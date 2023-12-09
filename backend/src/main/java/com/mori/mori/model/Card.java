@@ -29,8 +29,7 @@ public class Card {
 
     public Card (){
     }
-    public Card(long id, String question, String answer, Set<Tag> tags) {
-        this.id = id;
+    public Card( String question, String answer, Set<Tag> tags) {
         this.question = question;
         this.answer = answer;
         this.tags = tags;
