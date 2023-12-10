@@ -69,6 +69,31 @@ public class CardController {
         }
     }
 
+    @PutMapping("/cards/{id}")
+    public ResponseEntity<CardResponseDTO> updateCard(@PathVariable Long id, @RequestBody CardDTO cardDTO) {
+        try {
+            Optional<Card> cardData = cardRepository.findById(id);
+
+            if (cardData.isPresent()) {
+                Card existingCard = cardData.get();
+
+                existingCard.setQuestion(cardDTO.getQuestion());
+                existingCard.setAnswer(cardDTO.getAnswer());
+                Set<Tag> tagEntities = convertTagNamesToTags(cardDTO.getTags());
+                existingCard.setTags(tagEntities);
+
+                Card updatedCard = cardRepository.save(existingCard);
+
+                CardResponseDTO cardResponseDTO = convertToCardResponseDTO(updatedCard);
+                return new ResponseEntity<>(cardResponseDTO, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private CardResponseDTO convertToCardResponseDTO(Card card) {
         Set<String> tagNames = card.getTags().stream()
                 .map(Tag::getName)
