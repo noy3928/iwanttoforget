@@ -1,8 +1,9 @@
-package com.mori.mori.dto;
+package com.soak.soak.dto;
 
 import java.util.Set;
 
 public class CardDTO {
+
         private String question;
         private String answer;
         private Set<String> tags; // 태그 이름을 문자열로 받음

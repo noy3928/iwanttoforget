@@ -1,13 +1,13 @@
-package com.mori.mori.controller;
+package com.soak.soak.controller;
 
-import com.mori.mori.model.User;
-import com.mori.mori.payload.request.LoginRequest;
-import com.mori.mori.payload.request.SignupRequest;
-import com.mori.mori.payload.response.JwtResponse;
-import com.mori.mori.payload.response.MessageResponse;
-import com.mori.mori.repository.UserRepository;
-import com.mori.mori.security.jwt.JwtUtils;
-import com.mori.mori.security.services.UserDetailsImpl;
+import com.soak.soak.model.User;
+import com.soak.soak.payload.request.LoginRequest;
+import com.soak.soak.payload.request.SignupRequest;
+import com.soak.soak.payload.response.JwtResponse;
+import com.soak.soak.payload.response.MessageResponse;
+import com.soak.soak.repository.UserRepository;
+import com.soak.soak.security.jwt.JwtUtils;
+import com.soak.soak.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

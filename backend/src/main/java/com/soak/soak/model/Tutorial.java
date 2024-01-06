@@ -1,4 +1,4 @@
-package com.mori.mori.model;
+package com.soak.soak.model;
 import jakarta.persistence.*;
 
 @Entity

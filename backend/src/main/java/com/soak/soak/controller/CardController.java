@@ -1,11 +1,11 @@
-package com.mori.mori.controller;
+package com.soak.soak.controller;
 
-import com.mori.mori.dto.CardDTO;
-import com.mori.mori.dto.CardResponseDTO;
-import com.mori.mori.model.Card;
-import com.mori.mori.model.Tag;
-import com.mori.mori.repository.CardRepository;
-import com.mori.mori.repository.TagRepository;
+import com.soak.soak.dto.CardDTO;
+import com.soak.soak.dto.CardResponseDTO;
+import com.soak.soak.model.Card;
+import com.soak.soak.model.Tag;
+import com.soak.soak.repository.CardRepository;
+import com.soak.soak.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

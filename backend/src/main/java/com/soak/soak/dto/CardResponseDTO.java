@@ -1,4 +1,4 @@
-package com.mori.mori.dto;
+package com.soak.soak.dto;
 
 import lombok.Getter;
 
