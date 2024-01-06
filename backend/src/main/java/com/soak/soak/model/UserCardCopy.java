@@ -1,15 +1,15 @@
 package com.soak.soak.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "memorization")
-public class Memorization {
+@Table(name = "user_card_copy")
+public class UserCardCopy {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,6 @@ public class Memorization {
     @JoinColumn(name = "card_id", referencedColumnName = "id")
     private Card card;
 
-    @Getter
-    @Setter
-    private double rate; // 암기율
+    @Column(name = "copied_at")
+    private LocalDateTime copiedAt = LocalDateTime.now();
 }
