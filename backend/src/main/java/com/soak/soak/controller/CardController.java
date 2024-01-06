@@ -65,21 +65,32 @@ public class CardController {
             card.setIsPublic(cardDTO.isPublic());
             Card savedCard = cardRepository.save(card);
 
+            Set<String> tagNames = new HashSet<>();
+
             // 각 태그에 대해 CardTagMap 엔티티 생성 및 저장
             for (String tagName : cardDTO.getTags()) {
                 Tag tag = tagRepository.findByName(tagName)
                         .orElseGet(() -> tagRepository.save(new Tag(tagName)));
                 CardTagMap cardTagMap = new CardTagMap(savedCard, tag);
                 cardTagMapRepository.save(cardTagMap);
+
+                tagNames.add(tag.getName());
             }
 
             // CardResponseDTO 변환
-            CardResponseDTO cardResponseDTO = convertToCardResponseDTO(savedCard);
+            CardResponseDTO cardResponseDTO = new CardResponseDTO(
+                    savedCard.getId(),
+                    savedCard.getQuestion(),
+                    savedCard.getAnswer(),
+                    tagNames,
+                    savedCard.isPublic()
+            );
             return new ResponseEntity<>(cardResponseDTO, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
     @PutMapping("/cards/{id}")
