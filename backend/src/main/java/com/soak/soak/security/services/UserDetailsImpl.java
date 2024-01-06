@@ -1,6 +1,6 @@
-package com.mori.mori.security.services;
+package com.soak.soak.security.services;
 
-import com.mori.mori.model.User;
+import com.soak.soak.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;

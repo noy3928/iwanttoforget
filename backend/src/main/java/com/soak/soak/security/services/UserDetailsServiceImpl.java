@@ -1,7 +1,7 @@
-package com.mori.mori.security.services;
+package com.soak.soak.security.services;
 
-import com.mori.mori.model.User;
-import com.mori.mori.repository.UserRepository;
+import com.soak.soak.model.User;
+import com.soak.soak.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

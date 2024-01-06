@@ -7,6 +7,7 @@ public class CardDTO {
         private String question;
         private String answer;
         private Set<String> tags; // 태그 이름을 문자열로 받음
+        private boolean isPublic
 
     public String getQuestion() {
         return question;

@@ -56,18 +56,31 @@ public class CardController {
     }
 
     @PostMapping("/cards")
-    public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardDTO cardDTO){
+    public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardDTO cardDTO) {
         try {
-            Set<Tag> tagEntities = convertTagNamesToTags(cardDTO.getTags());
-            Card card = new Card(cardDTO.getQuestion(), cardDTO.getAnswer(), tagEntities);
-
+            // Card 엔티티 생성 및 저장
+            Card card = new Card();
+            card.setQuestion(cardDTO.getQuestion());
+            card.setAnswer(cardDTO.getAnswer());
+            card.setIsPublic(cardDTO.isPublic());
             Card savedCard = cardRepository.save(card);
+
+            // 각 태그에 대해 CardTagMap 엔티티 생성 및 저장
+            for (String tagName : cardDTO.getTags()) {
+                Tag tag = tagRepository.findByName(tagName)
+                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+                CardTagMap cardTagMap = new CardTagMap(savedCard, tag);
+                cardTagMapRepository.save(cardTagMap);
+            }
+
+            // CardResponseDTO 변환
             CardResponseDTO cardResponseDTO = convertToCardResponseDTO(savedCard);
             return new ResponseEntity<>(cardResponseDTO, HttpStatus.CREATED);
-        } catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @PutMapping("/cards/{id}")
     public ResponseEntity<CardResponseDTO> updateCard(@PathVariable Long id, @RequestBody CardDTO cardDTO) {

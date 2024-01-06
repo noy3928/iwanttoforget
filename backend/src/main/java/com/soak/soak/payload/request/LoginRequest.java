@@ -1,4 +1,4 @@
-package com.mori.mori.payload.request;
+package com.soak.soak.payload.request;
 
 import jakarta.validation.constraints.NotBlank;
 

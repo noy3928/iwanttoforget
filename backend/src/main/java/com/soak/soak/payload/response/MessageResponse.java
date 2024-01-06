@@ -1,4 +1,4 @@
-package com.mori.mori.payload.response;
+package com.soak.soak.payload.response;
 
 public class MessageResponse {
     private String message;

@@ -1,6 +1,6 @@
-package com.mori.mori.repository;
+package com.soak.soak.repository;
 
-import com.mori.mori.model.Tag;
+import com.soak.soak.model.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
