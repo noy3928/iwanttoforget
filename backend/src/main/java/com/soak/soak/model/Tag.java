@@ -1,28 +1,17 @@
 package com.soak.soak.model;
 
 import jakarta.persistence.*;
-
+import lombok.*;
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "tags")
+@Table(name = "tag")
 public class Tag {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
 
-    @Column(name = "name")
+    @Id
+    @Column(unique = true)
     private String name;
 
-    public Tag(){
-
-    }
-    public Tag(String name) {
-        this.name = name;
-    }
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }
