@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 })
 public class User {
     @Id
+    @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -50,4 +51,10 @@ public class User {
     @Getter
     @Column(name = "last_login")
     private LocalDateTime lastLogin;  // 마지막 로그인 시각
+
+    public User(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
 }

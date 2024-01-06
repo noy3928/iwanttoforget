@@ -1,11 +1,14 @@
 package com.soak.soak.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "card_tag_map")
 public class CardTagMap {
@@ -20,4 +23,9 @@ public class CardTagMap {
     @ManyToOne
     @JoinColumn(name = "tag_name", referencedColumnName = "name")
     private Tag tag;
+
+    public CardTagMap(Card card, Tag tag) {
+        this.card = card;
+        this.tag = tag;
+    }
 }
