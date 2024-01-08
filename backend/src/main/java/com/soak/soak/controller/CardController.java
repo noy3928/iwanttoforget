@@ -28,6 +28,33 @@ public class CardController {
     @Autowired
     CardTagMapRepository cardTagMapRepository;
 
+    @GetMapping("/cards")
+    public ResponseEntity<List<CardResponseDTO>> getCards() {
+        try {
+            List<Card> cards = cardRepository.findAll();
+
+            // 각 카드를 CardResponseDTO로 변환
+            List<CardResponseDTO> cardResponseDTOs = cards.stream().map(card -> {
+                Set<String> tagNames = cardTagMapRepository.findByCard(card).stream()
+                        .map(cardTagMap -> cardTagMap.getTag().getName())
+                        .collect(Collectors.toSet());
+
+                return new CardResponseDTO(
+                        card.getId(),
+                        card.getQuestion(),
+                        card.getAnswer(),
+                        tagNames,
+                        card.isPublic()
+                );
+            }).collect(Collectors.toList());
+
+            return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     @PostMapping("/cards")
     public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardDTO cardDTO) {
         try {
