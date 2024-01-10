@@ -1,8 +1,8 @@
-package com.mori.mori.security.jwt;
+package com.soak.soak.security.jwt;
 
 import java.io.IOException;
 
-import com.mori.mori.security.services.UserDetailsServiceImpl;
+import com.soak.soak.security.services.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

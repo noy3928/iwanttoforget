@@ -1,6 +1,6 @@
-package com.mori.mori.repository;
+package com.soak.soak.repository;
 
-import com.mori.mori.model.User;
+import com.soak.soak.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

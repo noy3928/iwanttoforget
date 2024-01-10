@@ -1,65 +1,60 @@
-package com.mori.mori.model;
+package com.soak.soak.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Table( name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),
-                @UniqueConstraint(columnNames = "email")
-        })
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email")
+})
 public class User {
     @Id
+    @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Getter
+    @Setter
     @NotBlank
     @Size(max = 20)
     private String username;
 
     @Getter
+    @Setter
     @NotBlank
     @Size(max = 50)
     @Email
     private String email;
 
     @Getter
+    @Setter
     @NotBlank
     @Size(max = 120)
     private String password;
 
-    public User() {
-    }
+    @Getter
+    @Setter
+    @Size(max = 255)  // 설명의 최대 길이를 지정합니다.
+    private String description;  // 필드 이름은 소문자로 시작해야 합니다.
+
+    @Getter
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();  // 계정 생성 시각
+
+    @Getter
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;  // 마지막 로그인 시각
 
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
-        this.password = password;
-    }
-
-    // getters and setters for id, username, email, and password
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
         this.password = password;
     }
 }

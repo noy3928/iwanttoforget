@@ -1,4 +1,4 @@
-package com.mori.mori.payload.response;
+package com.soak.soak.payload.response;
 
 import java.util.List;
 

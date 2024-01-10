@@ -1,4 +1,4 @@
-package com.mori.mori.security.jwt;
+package com.soak.soak.security.jwt;
 
 
 import java.io.IOException;
