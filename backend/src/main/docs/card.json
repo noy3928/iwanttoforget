@@ -1,0 +1,133 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Card Management API",
+    "description": "API for managing cards and their associated tags.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:8080",
+  "schemes": ["http"],
+  "basePath": "/api",
+  "paths": {
+    "/cards": {
+      "get": {
+        "summary": "모든 카드 조회하기",
+        "description": "모든 카드를 조회합니다.",
+        "responses": {
+          "200": {
+            "description": "성공 응답",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CardResponseDTO"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "새로운 카드 만들기",
+        "description": "새로운 카드를 만듭니다.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "card",
+            "description": "Card to add",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CardDTO"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Card created"
+          }
+        }
+      }
+    },
+    "/cards/{id}": {
+      "put": {
+        "summary": "하나의 카드를 수정합니다.",
+        "description": "기존에 존재하는 하나의 카드의 내용을 수정합니다.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "integer",
+            "required": true,
+            "description": "ID of the card to update"
+          },
+          {
+            "in": "body",
+            "name": "card",
+            "description": "Updated card details",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CardDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Card updated"
+          },
+          "404": {
+            "description": "Card not found"
+          }
+        }
+      }
+    },
+    "/cards/{id}": {
+      "delete": {
+        "summary": "하나의 카드를 삭제합니다..",
+        "description": "기존에 존재하는 하나의 카드를 삭제합니다.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "integer",
+            "required": true,
+            "description": "ID of the card to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Card deleted"
+          },
+          "404": {
+            "description": "Card not found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CardDTO": {
+      "type": "object",
+      "required": ["question", "answer", "isPublic", "tags"],
+      "properties": {
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "isPublic": { "type": "boolean" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "CardResponseDTO": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "format": "int64" },
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "isPublic": { "type": "boolean" }
+      }
+    }
+  }
+}
