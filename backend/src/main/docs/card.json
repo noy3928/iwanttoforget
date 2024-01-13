@@ -1,0 +1,348 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Card Management API",
+    "description": "API for managing cards and their associated tags.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api"
+    }
+  ],
+  "paths": {
+    "/me/cards": {
+      "get": {
+        "summary": "자신의 모든 카드 조회하기",
+        "description": "자신의 모든 카드를 조회합니다.",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "검색할 태그들 (여러 태그 가능)",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "정렬 기준 (예: 'newest', 'oldest', 'memorization:highest', 'memorization:lowest')",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["newest", "oldest", "memorization:highest", "memorization:lowest"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "조건에 맞는 카드 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CardResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/cards": {
+      "get": {
+        "summary": "카드 조회하기",
+        "description": "여러 태그와 정렬 조건을 기반으로 카드를 조회합니다.",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "검색할 태그들 (여러 태그 가능)",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "정렬 기준 (예: 'newest', 'oldest', 'memorization:highest', 'memorization:lowest')",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["newest", "oldest", "memorization:highest", "memorization:lowest"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "조건에 맞는 카드 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CardResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "새로운 카드 만들기",
+        "description": "새로운 카드를 만듭니다.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Card created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardResponseDTO"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/cards/{id}": {
+      "put": {
+        "summary": "카드 수정하기",
+        "description": "하나의 카드를 수정합니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "수정할 카드의 ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "card",
+            "in": "body",
+            "description": "수정할 카드의 정보",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CardDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Card updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardResponseDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Card not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "카드 삭제하기",
+        "description": "하나의 카드를 삭제합니다.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "삭제할 카드의 ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Card deleted"
+          },
+          "404": {
+            "description": "Card not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/cards/{cardId}/copy": {
+      "post": {
+        "summary": "카드 복사하기",
+        "description": "하나의 카드를 복사합니다.",
+        "parameters": [
+          {
+            "name": "cardId",
+            "in": "path",
+            "description": "복사할 카드의 ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Card copied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardResponseDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Card not found"
+          }
+        }
+      }
+    },
+    "/cards/search": {
+      "get": {
+        "summary": "카드 검색하기",
+        "description": "카드를 검색합니다.",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "검색할 쿼리",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "정렬 기준 (예: 'newest', 'oldest', 'memorization:highest', 'memorization:lowest')",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["newest", "oldest", "memorization:highest", "memorization:lowest"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "조건에 맞는 카드 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CardResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CardDTO": {
+        "type": "object",
+        "properties": {
+          "front": {
+            "type": "string"
+          },
+          "back": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CardResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "front": {
+            "type": "string"
+          },
+          "back": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "memorization": {
+            "type": "object",
+            "properties": {
+              "memorizationLevel": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "lastMemorizedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

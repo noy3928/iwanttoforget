@@ -115,6 +115,52 @@ public class CardController {
         }
     }
 
+    @PutMapping("/cards/{id}")
+    public ResponseEntity<CardResponseDTO> updateCard(@PathVariable Long id, @RequestBody CardDTO cardDTO) {
+        try {
+            Optional<Card> cardOptional = cardRepository.findById(id);
+
+            if (cardOptional.isPresent()) {
+                Card card = cardOptional.get();
+
+                // 카드 정보 업데이트
+                card.setQuestion(cardDTO.getQuestion());
+                card.setAnswer(cardDTO.getAnswer());
+                card.setPublic(cardDTO.isPublic());
+
+                // 태그 업데이트 로직 (기존 태그 삭제 후 새 태그 추가)
+                cardTagMapRepository.deleteByCard(card);
+                Set<String> tagNames = new HashSet<>();
+                for (String tagName : cardDTO.getTags()) {
+                    Tag tag = tagRepository.findByName(tagName)
+                            .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+                    CardTagMap cardTagMap = new CardTagMap(card, tag);
+                    cardTagMapRepository.save(cardTagMap);
+                    tagNames.add(tag.getName());
+                }
+
+                // 카드 정보 저장
+                Card updatedCard = cardRepository.save(card);
+
+                // CardResponseDTO로 변환
+                CardResponseDTO cardResponseDTO = new CardResponseDTO(
+                        updatedCard.getId(),
+                        updatedCard.getQuestion(),
+                        updatedCard.getAnswer(),
+                        tagNames,
+                        updatedCard.isPublic()
+                );
+
+                return new ResponseEntity<>(cardResponseDTO, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     private Set<String> getTagNamesForCard(Card card) {
         return cardTagMapRepository.findByCard(card).stream()
                 .map(cardTagMap -> cardTagMap.getTag().getName())
