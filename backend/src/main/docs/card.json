@@ -1,50 +1,66 @@
 {
-  "swagger": "2.0",
+  "openapi": "3.0.0",
   "info": {
     "title": "Card Management API",
     "description": "API for managing cards and their associated tags.",
     "version": "1.0.0"
   },
-  "host": "localhost:8080",
-  "schemes": ["http"],
-  "basePath": "/api",
+  "servers": [
+    {
+      "url": "http://localhost:8080/api"
+    }
+  ],
   "paths": {
     "/me/cards": {
-      "get" : {
-        "summary" : "자신의 모든 카드 조회하기",
+      "get": {
+        "summary": "자신의 모든 카드 조회하기",
         "description": "자신의 모든 카드를 조회합니다.",
         "parameters": [
           {
-            "in": "query",
             "name": "tag",
-            "required": false,
+            "in": "query",
             "description": "검색할 태그들 (여러 태그 가능)",
-            "type": "array",
-            "items": {
-              "type": "string"
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
-            "collectionFormat": "multi"
+            "style": "form",
+            "explode": true
           },
           {
-            "in": "query",
             "name": "sortBy",
+            "in": "query",
+            "description": "정렬 기준 (예: 'newest', 'oldest', 'memorization:highest', 'memorization:lowest')",
             "required": false,
-            "description": "정렬 기준 (예: 'newest', 'oldest', 'memoriztion:highest', 'memoriztion:lowest')",
-            "type": "string",
-            "enum": ["newest", "oldest", "memoriztion:highest", "memoriztion:lowest"]
+            "schema": {
+              "type": "string",
+              "enum": ["newest", "oldest", "memorization:highest", "memorization:lowest"]
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "조건에 맞는 카드 목록",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/CardResponseDTO"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CardResponseDTO"
+                  }
+                }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/cards": {
@@ -53,32 +69,41 @@
         "description": "여러 태그와 정렬 조건을 기반으로 카드를 조회합니다.",
         "parameters": [
           {
-            "in": "query",
             "name": "tag",
-            "required": false,
+            "in": "query",
             "description": "검색할 태그들 (여러 태그 가능)",
-            "type": "array",
-            "items": {
-              "type": "string"
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
-            "collectionFormat": "multi"
+            "style": "form",
+            "explode": true
           },
           {
-            "in": "query",
             "name": "sortBy",
+            "in": "query",
+            "description": "정렬 기준 (예: 'newest', 'oldest', 'memorization:highest', 'memorization:lowest')",
             "required": false,
-            "description": "정렬 기준 (예: 'newest', 'oldest', 'memoriztion:highest', 'memoriztion:lowest')",
-            "type": "string",
-            "enum": ["newest", "oldest", "memoriztion:highest", "memoriztion:lowest"]
+            "schema": {
+              "type": "string",
+              "enum": ["newest", "oldest", "memorization:highest", "memorization:lowest"]
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "조건에 맞는 카드 목록",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/CardResponseDTO"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CardResponseDTO"
+                  }
+                }
               }
             }
           }
@@ -87,65 +112,92 @@
       "post": {
         "summary": "새로운 카드 만들기",
         "description": "새로운 카드를 만듭니다.",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "card",
-            "description": "Card to add",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CardDTO"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardDTO"
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "201": {
-            "description": "Card created"
+          "200": {
+            "description": "Card created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardResponseDTO"
+                }
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/cards/{id}": {
       "put": {
-        "summary": "하나의 카드를 수정합니다.",
-        "description": "기존에 존재하는 하나의 카드의 내용을 수정합니다.",
+        "summary": "카드 수정하기",
+        "description": "하나의 카드를 수정합니다.",
         "parameters": [
           {
-            "in": "path",
             "name": "id",
-            "type": "integer",
-            "required": true,
-            "description": "ID of the card to update"
-          },
-          {
-            "in": "body",
-            "name": "card",
-            "description": "Updated card details",
+            "in": "path",
+            "description": "수정할 카드의 ID",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CardDTO"
+              "type": "string"
+            }
+          },
+          {
+            "name": "card",
+            "in": "body",
+            "description": "수정할 카드의 정보",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CardDTO"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Card updated"
+            "description": "Card updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardResponseDTO"
+                }
+              }
+            }
           },
           "404": {
             "description": "Card not found"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
-        "summary": "하나의 카드를 삭제합니다..",
-        "description": "기존에 존재하는 하나의 카드를 삭제합니다.",
+        "summary": "카드 삭제하기",
+        "description": "하나의 카드를 삭제합니다.",
         "parameters": [
           {
-            "in": "path",
             "name": "id",
-            "type": "integer",
+            "in": "path",
+            "description": "삭제할 카드의 ID",
             "required": true,
-            "description": "ID of the card to delete"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -155,36 +207,100 @@
           "404": {
             "description": "Card not found"
           }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/cards/{cardId}/copy": {
+      "post": {
+        "summary": "카드 복사하기",
+        "description": "하나의 카드를 복사합니다.",
+        "parameters": [
+          {
+            "name": "cardId",
+            "in": "path",
+            "description": "복사할 카드의 ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Card copied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardResponseDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Card not found"
+          }
         }
       }
     }
   },
-  "definitions": {
-    "CardDTO": {
-      "type": "object",
-      "required": ["question", "answer", "isPublic", "tags"],
-      "properties": {
-        "question": { "type": "string" },
-        "answer": { "type": "string" },
-        "isPublic": { "type": "boolean" },
-        "tags": {
-          "type": "array",
-          "items": { "type": "string" }
+  "components": {
+    "schemas": {
+      "CardDTO": {
+        "type": "object",
+        "properties": {
+          "front": {
+            "type": "string"
+          },
+          "back": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
-      }
-    },
-    "CardResponseDTO": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "integer", "format": "int64" },
-        "question": { "type": "string" },
-        "answer": { "type": "string" },
-        "tags": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "isPublic": { "type": "boolean" }
+      },
+      "CardResponseDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "front": {
+            "type": "string"
+          },
+          "back": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "memorization": {
+            "type": "object",
+            "properties": {
+              "memorizationLevel": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "lastMemorizedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
       }
     }
   }
 }
+
