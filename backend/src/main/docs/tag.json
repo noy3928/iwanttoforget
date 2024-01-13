@@ -1,16 +1,39 @@
 {
-  "openapi": "3.0.3",
+  "swagger": "2.0",
   "info": {
-    "title": "$Title$",
-    "description": "$Title$",
+    "title": "Tag",
+    "description": "API for managing tags",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "$https$"
-    }
-  ],
+  "host": "localhost:8080",
+  "schemes": ["http"],
+  "basePath": "/api",
   "paths": {
-    $END$
+    "/users/{userId}/tags": {
+      "get": {
+        "summary": "특정 유저가 소유한 태그 조회하기",
+        "description": "userId를 통해 식별된 유저의 소유한 모든 태그를 조회합니다.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the user",
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tags owned by the user",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

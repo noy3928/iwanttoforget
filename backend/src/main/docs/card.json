@@ -9,13 +9,72 @@
   "schemes": ["http"],
   "basePath": "/api",
   "paths": {
-    "/cards": {
-      "get": {
-        "summary": "모든 카드 조회하기",
-        "description": "모든 카드를 조회합니다.",
+    "/me/cards": {
+      "get" : {
+        "summary" : "자신의 모든 카드 조회하기",
+        "description": "자신의 모든 카드를 조회합니다.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "description": "검색할 태그들 (여러 태그 가능)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "required": false,
+            "description": "정렬 기준 (예: 'newest', 'oldest', 'memoriztion:highest', 'memoriztion:lowest')",
+            "type": "string",
+            "enum": ["newest", "oldest", "memoriztion:highest", "memoriztion:lowest"]
+          }
+        ],
         "responses": {
           "200": {
-            "description": "성공 응답",
+            "description": "조건에 맞는 카드 목록",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CardResponseDTO"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cards": {
+      "get": {
+        "summary": "카드 조회하기",
+        "description": "여러 태그와 정렬 조건을 기반으로 카드를 조회합니다.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "description": "검색할 태그들 (여러 태그 가능)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "required": false,
+            "description": "정렬 기준 (예: 'newest', 'oldest', 'memoriztion:highest', 'memoriztion:lowest')",
+            "type": "string",
+            "enum": ["newest", "oldest", "memoriztion:highest", "memoriztion:lowest"]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "조건에 맞는 카드 목록",
             "schema": {
               "type": "array",
               "items": {
@@ -76,9 +135,7 @@
             "description": "Card not found"
           }
         }
-      }
-    },
-    "/cards/{id}": {
+      },
       "delete": {
         "summary": "하나의 카드를 삭제합니다..",
         "description": "기존에 존재하는 하나의 카드를 삭제합니다.",
