@@ -246,6 +246,48 @@
           }
         }
       }
+    },
+    "/cards/search": {
+      "get": {
+        "summary": "카드 검색하기",
+        "description": "카드를 검색합니다.",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "검색할 쿼리",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "정렬 기준 (예: 'newest', 'oldest', 'memorization:highest', 'memorization:lowest')",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["newest", "oldest", "memorization:highest", "memorization:lowest"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "조건에 맞는 카드 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CardResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
