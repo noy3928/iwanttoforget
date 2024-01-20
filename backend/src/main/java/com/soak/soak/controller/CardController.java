@@ -8,6 +8,7 @@ import com.soak.soak.model.Tag;
 import com.soak.soak.repository.CardRepository;
 import com.soak.soak.repository.CardTagMapRepository;
 import com.soak.soak.repository.TagRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -116,19 +117,19 @@ public class CardController {
     }
 
     @PutMapping("/cards/{id}")
+    @Transactional
     public ResponseEntity<CardResponseDTO> updateCard(@PathVariable Long id, @RequestBody CardDTO cardDTO) {
         try {
             Optional<Card> cardOptional = cardRepository.findById(id);
+            System.out.println(cardOptional);
 
             if (cardOptional.isPresent()) {
                 Card card = cardOptional.get();
 
-                // 카드 정보 업데이트
                 card.setQuestion(cardDTO.getQuestion());
                 card.setAnswer(cardDTO.getAnswer());
                 card.setPublic(cardDTO.isPublic());
 
-                // 태그 업데이트 로직 (기존 태그 삭제 후 새 태그 추가)
                 cardTagMapRepository.deleteByCard(card);
                 Set<String> tagNames = new HashSet<>();
                 for (String tagName : cardDTO.getTags()) {
@@ -139,10 +140,8 @@ public class CardController {
                     tagNames.add(tag.getName());
                 }
 
-                // 카드 정보 저장
                 Card updatedCard = cardRepository.save(card);
 
-                // CardResponseDTO로 변환
                 CardResponseDTO cardResponseDTO = new CardResponseDTO(
                         updatedCard.getId(),
                         updatedCard.getQuestion(),
@@ -156,6 +155,7 @@ public class CardController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
