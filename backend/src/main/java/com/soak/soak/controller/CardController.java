@@ -160,6 +160,33 @@ public class CardController {
         }
     }
 
+    @DeleteMapping("/cards/{id}")
+    @Transactional
+    public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
+        try {
+            Optional<Card> cardOptional = cardRepository.findById(id);
+
+            if (cardOptional.isPresent()) {
+                Card card = cardOptional.get();
+
+                // 카드에 연결된 태그 매핑 삭제
+                cardTagMapRepository.deleteByCard(card);
+
+                // 카드 삭제
+                cardRepository.delete(card);
+
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
 
     private Set<String> getTagNamesForCard(Card card) {
         return cardTagMapRepository.findByCard(card).stream()
