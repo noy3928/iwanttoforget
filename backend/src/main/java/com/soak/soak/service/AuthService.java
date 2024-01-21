@@ -8,6 +8,7 @@ import com.soak.soak.payload.response.MessageResponse;
 import com.soak.soak.repository.UserRepository;
 import com.soak.soak.security.jwt.JwtUtils;
 import com.soak.soak.security.services.UserDetailsImpl;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -69,6 +70,21 @@ public class AuthService {
         userRepository.save(user);
 
         return new MessageResponse("User registered successfully!");
+    }
+
+    public UserDetailsImpl getCurrentAuthenticatedUserDetails() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CustomUnauthenticatedException("User not authenticated");
+        }
+        return (UserDetailsImpl) authentication.getPrincipal();
+    }
+
+
+    public static class CustomUnauthenticatedException extends RuntimeException {
+        public CustomUnauthenticatedException(String message) {
+            super(message);
+        }
     }
 
     private void updateLastLogin(UUID userId) {
