@@ -42,8 +42,13 @@ public class User {
     @Size(max = 255)
     private String description;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
