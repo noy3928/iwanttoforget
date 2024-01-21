@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface CardTagMapRepository extends JpaRepository<CardTagMap, Long> {
     List<CardTagMap> findByCard(Card card);
+    void deleteByCard(Card card);
 }

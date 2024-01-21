@@ -295,10 +295,10 @@
       "CardDTO": {
         "type": "object",
         "properties": {
-          "front": {
+          "question": {
             "type": "string"
           },
-          "back": {
+          "answer": {
             "type": "string"
           },
           "tags": {
@@ -306,6 +306,9 @@
             "items": {
               "type": "string"
             }
+          },
+          "isPublic": {
+            "type": "boolean"
           }
         }
       },
@@ -315,10 +318,10 @@
           "id": {
             "type": "string"
           },
-          "front": {
+          "question": {
             "type": "string"
           },
-          "back": {
+          "answer": {
             "type": "string"
           },
           "tags": {
@@ -327,10 +330,13 @@
               "type": "string"
             }
           },
+          "isPublic": {
+            "type": "boolean"
+          },
           "memorization": {
             "type": "object",
             "properties": {
-              "memorizationLevel": {
+              "rate": {
                 "type": "integer",
                 "format": "int32"
               },

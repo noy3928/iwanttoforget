@@ -22,7 +22,7 @@
             "description": "암기율을 기록할 카드의 ID",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "string"
             }
           }
         ],
@@ -33,7 +33,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "memorizationRate": {
+                  "rate": {
                     "type": "number"
                   }
                 }
