@@ -1,6 +1,7 @@
 package com.soak.soak.service;
 
 import com.soak.soak.dto.CardDTO;
+import com.soak.soak.dto.CardResponseDTO;
 import com.soak.soak.model.Card;
 import com.soak.soak.model.CardTagMap;
 import com.soak.soak.model.Tag;
@@ -39,7 +40,7 @@ public class CardService {
     private AuthService authService;
 
     @Transactional
-    public Card createCard(CardDTO cardDTO) {
+    public CardResponseDTO createCard(CardDTO cardDTO) {
         UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
         User user = userRepository.findById(currentUser.getId()).orElseThrow(
                 () -> new EntityNotFoundException("User not found")
@@ -54,7 +55,9 @@ public class CardService {
 
         createOrUpdateCardTags(card, cardDTO.getTags());
 
-        return card;
+        CardResponseDTO cardResponseDTO = convertCardToCardResponseDTO(card, cardDTO.getTags());
+
+        return cardResponseDTO;
     }
 
     @Transactional
@@ -101,4 +104,25 @@ public class CardService {
             cardTagMapRepository.save(cardTagMap);
         }
     }
+
+    private CardResponseDTO convertCardToCardResponseDTO(Card card, Set<String> tagNames){
+        return new CardResponseDTO(
+                card.getId(),
+                card.getQuestion(),
+                card.getAnswer(),
+                tagNames,
+                card.isPublic()
+        );
+    }
 }
+
+/*
+
+              CardResponseDTO cardResponseDTO = new CardResponseDTO(
+                        updatedCard.getId(),
+                        updatedCard.getQuestion(),
+                        updatedCard.getAnswer(),
+                        tagNames,
+                        updatedCard.isPublic()
+                );
+* */

@@ -11,6 +11,7 @@ import com.soak.soak.repository.CardTagMapRepository;
 import com.soak.soak.repository.TagRepository;
 import com.soak.soak.repository.UserRepository;
 import com.soak.soak.service.AuthService;
+import com.soak.soak.service.CardService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class CardController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private CardService cardService;
 
     @GetMapping("/cards")
     public ResponseEntity<List<CardResponseDTO>> getCards() {
@@ -93,37 +97,7 @@ public class CardController {
     @PostMapping("/cards")
     public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardDTO cardDTO) {
         try {
-            UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
-            User user = userRepository.findById(currentUser.getId()).orElseThrow(
-                    () -> new EntityNotFoundException("User not found")
-            );
-
-            Card card = new Card();
-            card.setQuestion(cardDTO.getQuestion());
-            card.setAnswer(cardDTO.getAnswer());
-            card.setPublic(cardDTO.isPublic());
-            card.setUser(user);
-            Card savedCard = cardRepository.save(card);
-
-            Set<String> tagNames = new HashSet<>();
-
-            for (String tagName : cardDTO.getTags()) {
-                Tag tag = tagRepository.findByName(tagName)
-                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
-                CardTagMap cardTagMap = new CardTagMap(savedCard, tag);
-                cardTagMapRepository.save(cardTagMap);
-
-                tagNames.add(tag.getName());
-            }
-
-            CardResponseDTO cardResponseDTO = new CardResponseDTO(
-                    savedCard.getId(),
-                    savedCard.getQuestion(),
-                    savedCard.getAnswer(),
-                    tagNames,
-                    savedCard.isPublic()
-            );
-
+            CardResponseDTO cardResponseDTO = cardService.createCard(cardDTO);
             return new ResponseEntity<>(cardResponseDTO, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
