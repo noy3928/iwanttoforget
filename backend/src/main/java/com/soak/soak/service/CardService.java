@@ -55,9 +55,7 @@ public class CardService {
 
         createOrUpdateCardTags(card, cardDTO.getTags());
 
-        CardResponseDTO cardResponseDTO = convertCardToCardResponseDTO(card, cardDTO.getTags());
-
-        return cardResponseDTO;
+        return convertCardToCardResponseDTO(card, cardDTO.getTags());
     }
 
     @Transactional
@@ -116,13 +114,3 @@ public class CardService {
     }
 }
 
-/*
-
-              CardResponseDTO cardResponseDTO = new CardResponseDTO(
-                        updatedCard.getId(),
-                        updatedCard.getQuestion(),
-                        updatedCard.getAnswer(),
-                        tagNames,
-                        updatedCard.isPublic()
-                );
-* */
