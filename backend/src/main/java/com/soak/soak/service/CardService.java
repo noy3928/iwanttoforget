@@ -60,19 +60,26 @@ public class CardService {
     }
 
     @Transactional
-    public Card updateCard(Long id, CardDTO cardDTO) {
+    public CardResponseDTO updateCard(Long id, CardDTO cardDTO) {
+        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
+        User user = userRepository.findById(currentUser.getId()).orElseThrow(
+                () -> new EntityNotFoundException("User not found")
+        );
+
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found with id: " + id));
 
         card.setQuestion(cardDTO.getQuestion());
         card.setAnswer(cardDTO.getAnswer());
         card.setPublic(cardDTO.isPublic());
-        card = cardRepository.save(card);
+        card.setUser(user);
 
+        card = cardRepository.save(card);
         createOrUpdateCardTags(card, cardDTO.getTags());
 
-        return card;
+        return convertCardToCardResponseDTO(card);
     }
+
 
     @Transactional
     public void deleteCard(Long id) {
@@ -82,9 +89,13 @@ public class CardService {
         cardRepository.delete(card);
     }
 
-    public Optional<Card> getCardById(Long id) {
-        return cardRepository.findById(id);
+    // CardService 클래스 내의 수정된 getCardById 메서드
+    public CardResponseDTO getCardById(Long id) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Card not found with id: " + id));
+        return convertCardToCardResponseDTO(card);
     }
+
 
     public List<CardResponseDTO> getAllCards() {
         List<Card> cards = cardRepository.findAll();
