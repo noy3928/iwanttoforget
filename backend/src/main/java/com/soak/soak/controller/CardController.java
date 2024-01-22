@@ -22,8 +22,10 @@ public class CardController {
 
     @Autowired
     CardRepository cardRepository;
+
     @Autowired
     TagRepository tagRepository;
+
     @Autowired
     CardTagMapRepository cardTagMapRepository;
 
@@ -44,7 +46,7 @@ public class CardController {
     }
 
     @GetMapping("/cards/{id}")
-    public ResponseEntity<CardResponseDTO> getCardById(@PathVariable Long id) {
+    public ResponseEntity<CardResponseDTO> getCardById(@PathVariable UUID id) {
         try {
             CardResponseDTO cardResponseDTO = cardService.getCardById(id);
             return new ResponseEntity<>(cardResponseDTO, HttpStatus.OK);
@@ -66,7 +68,7 @@ public class CardController {
     }
 
     @PutMapping("/cards/{id}")
-    public ResponseEntity<CardResponseDTO> updateCard(@PathVariable Long id, @RequestBody CardDTO cardDTO) {
+    public ResponseEntity<CardResponseDTO> updateCard(@PathVariable UUID id, @RequestBody CardDTO cardDTO) {
         try {
             CardResponseDTO updatedCardResponseDTO = cardService.updateCard(id, cardDTO);
             return new ResponseEntity<>(updatedCardResponseDTO, HttpStatus.OK);
@@ -79,7 +81,7 @@ public class CardController {
     }
 
     @DeleteMapping("/cards/{id}")
-    public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCard(@PathVariable UUID id) {
         try {
             cardService.deleteCard(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

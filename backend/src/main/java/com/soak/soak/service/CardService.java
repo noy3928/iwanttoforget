@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,7 +57,7 @@ public class CardService {
     }
 
     @Transactional
-    public CardResponseDTO updateCard(Long id, CardDTO cardDTO) {
+    public CardResponseDTO updateCard(UUID id, CardDTO cardDTO) {
         UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
         User user = userRepository.findById(currentUser.getId()).orElseThrow(
                 () -> new EntityNotFoundException("User not found")
@@ -82,7 +79,7 @@ public class CardService {
 
 
     @Transactional
-    public void deleteCard(Long id) {
+    public void deleteCard(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found with id: " + id));
         cardTagMapRepository.deleteByCard(card);
@@ -90,7 +87,7 @@ public class CardService {
     }
 
     // CardService 클래스 내의 수정된 getCardById 메서드
-    public CardResponseDTO getCardById(Long id) {
+    public CardResponseDTO getCardById(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Card not found with id: " + id));
         return convertCardToCardResponseDTO(card);
