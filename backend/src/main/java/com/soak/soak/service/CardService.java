@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CardService {
@@ -55,7 +56,7 @@ public class CardService {
 
         createOrUpdateCardTags(card, cardDTO.getTags());
 
-        return convertCardToCardResponseDTO(card, cardDTO.getTags());
+        return convertCardToCardResponseDTO(card);
     }
 
     @Transactional
@@ -85,8 +86,9 @@ public class CardService {
         return cardRepository.findById(id);
     }
 
-    public List<Card> getAllCards() {
-        return cardRepository.findAll();
+    public List<CardResponseDTO> getAllCards() {
+        List<Card> cards = cardRepository.findAll();
+        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
     }
 
     private void createOrUpdateCardTags(Card card, Set<String> tagNames) {
@@ -103,7 +105,8 @@ public class CardService {
         }
     }
 
-    private CardResponseDTO convertCardToCardResponseDTO(Card card, Set<String> tagNames){
+    private CardResponseDTO convertCardToCardResponseDTO(Card card) {
+        Set<String> tagNames = getTagNamesForCard(card);
         return new CardResponseDTO(
                 card.getId(),
                 card.getQuestion(),
@@ -111,6 +114,12 @@ public class CardService {
                 tagNames,
                 card.isPublic()
         );
+    }
+
+    private Set<String> getTagNamesForCard(Card card) {
+        return cardTagMapRepository.findByCard(card).stream()
+                .map(cardTagMap -> cardTagMap.getTag().getName())
+                .collect(Collectors.toSet());
     }
 }
 

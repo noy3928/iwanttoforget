@@ -47,21 +47,7 @@ public class CardController {
     @GetMapping("/cards")
     public ResponseEntity<List<CardResponseDTO>> getCards() {
         try {
-            List<Card> cards = cardRepository.findAll();
-
-            // 각 카드를 CardResponseDTO로 변환
-            List<CardResponseDTO> cardResponseDTOs = cards.stream().map(card -> {
-                Set<String> tagNames = getTagNamesForCard(card);
-
-                return new CardResponseDTO(
-                        card.getId(),
-                        card.getQuestion(),
-                        card.getAnswer(),
-                        tagNames,
-                        card.isPublic()
-                );
-            }).collect(Collectors.toList());
-
+            List<CardResponseDTO> cardResponseDTOs = cardService.getAllCards();
             return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -172,8 +158,6 @@ public class CardController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
 
 
     private Set<String> getTagNamesForCard(Card card) {
