@@ -63,11 +63,20 @@
         ]
       }
     },
-    "/cards": {
+    "/cards/user/{userId}": {
       "get": {
-        "summary": "카드 조회하기",
-        "description": "여러 태그와 정렬 조건을 기반으로 카드를 조회합니다.",
+        "summary": "다른 유저의 카드 조회하기",
+        "description": "특정 사용자가 공개한 카드를 태그와 정렬 조건을 기반으로 조회합니다.",
         "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "조회할 사용자의 고유 ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "tag",
             "in": "query",
@@ -106,9 +115,15 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "사용자를 찾을 수 없음"
           }
         }
-      },
+      }
+    },
+
+    "/cards": {
       "post": {
         "summary": "새로운 카드 만들기",
         "description": "새로운 카드를 만듭니다.",

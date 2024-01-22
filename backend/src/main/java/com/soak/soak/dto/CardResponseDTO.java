@@ -4,11 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
 public class CardResponseDTO {
-    private long id;
+    private UUID id;
     private String question;
     private String answer;
     private Set<String> tags; // 태그 이름만을 포함하는 String 타입의 Set
@@ -17,7 +18,7 @@ public class CardResponseDTO {
     public CardResponseDTO() {
     }
 
-    public CardResponseDTO(long id, String question, String answer, Set<String> tags, boolean isPublic) {
+    public CardResponseDTO(UUID id, String question, String answer, Set<String> tags, boolean isPublic) {
         this.id = id;
         this.question = question;
         this.answer = answer;

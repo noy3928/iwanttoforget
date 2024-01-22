@@ -16,10 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CardService {
@@ -55,38 +53,50 @@ public class CardService {
 
         createOrUpdateCardTags(card, cardDTO.getTags());
 
-        return convertCardToCardResponseDTO(card, cardDTO.getTags());
+        return convertCardToCardResponseDTO(card);
     }
 
     @Transactional
-    public Card updateCard(Long id, CardDTO cardDTO) {
+    public CardResponseDTO updateCard(UUID id, CardDTO cardDTO) {
+        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
+        User user = userRepository.findById(currentUser.getId()).orElseThrow(
+                () -> new EntityNotFoundException("User not found")
+        );
+
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found with id: " + id));
 
         card.setQuestion(cardDTO.getQuestion());
         card.setAnswer(cardDTO.getAnswer());
         card.setPublic(cardDTO.isPublic());
-        card = cardRepository.save(card);
+        card.setUser(user);
 
+        card = cardRepository.save(card);
         createOrUpdateCardTags(card, cardDTO.getTags());
 
-        return card;
+        return convertCardToCardResponseDTO(card);
     }
 
+
     @Transactional
-    public void deleteCard(Long id) {
+    public void deleteCard(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found with id: " + id));
         cardTagMapRepository.deleteByCard(card);
         cardRepository.delete(card);
     }
 
-    public Optional<Card> getCardById(Long id) {
-        return cardRepository.findById(id);
+    // CardService 클래스 내의 수정된 getCardById 메서드
+    public CardResponseDTO getCardById(UUID id) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Card not found with id: " + id));
+        return convertCardToCardResponseDTO(card);
     }
 
-    public List<Card> getAllCards() {
-        return cardRepository.findAll();
+
+    public List<CardResponseDTO> getAllCards() {
+        List<Card> cards = cardRepository.findAll();
+        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
     }
 
     private void createOrUpdateCardTags(Card card, Set<String> tagNames) {
@@ -103,7 +113,8 @@ public class CardService {
         }
     }
 
-    private CardResponseDTO convertCardToCardResponseDTO(Card card, Set<String> tagNames){
+    private CardResponseDTO convertCardToCardResponseDTO(Card card) {
+        Set<String> tagNames = getTagNamesForCard(card);
         return new CardResponseDTO(
                 card.getId(),
                 card.getQuestion(),
@@ -111,6 +122,12 @@ public class CardService {
                 tagNames,
                 card.isPublic()
         );
+    }
+
+    private Set<String> getTagNamesForCard(Card card) {
+        return cardTagMapRepository.findByCard(card).stream()
+                .map(cardTagMap -> cardTagMap.getTag().getName())
+                .collect(Collectors.toSet());
     }
 }
 
