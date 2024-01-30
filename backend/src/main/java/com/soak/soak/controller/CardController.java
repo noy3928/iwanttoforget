@@ -45,6 +45,16 @@ public class CardController {
         }
     }
 
+    @GetMapping("/cards/user/{userId}")
+    public ResponseEntity<List<CardResponseDTO>> getCardsByUserId(@PathVariable UUID userId) {
+        try {
+            List<CardResponseDTO> cardResponseDTOs = cardService.getCardsByUserId(userId);
+            return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/cards/{id}")
     public ResponseEntity<CardResponseDTO> getCardById(@PathVariable UUID id) {
         try {
