@@ -99,6 +99,11 @@ public class CardService {
         return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
     }
 
+    public List<CardResponseDTO> getCardsByUserId(UUID userId) {
+        List<Card> cards = cardRepository.findByUserIdAndIsPublic(userId, true);
+        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
+    }
+
     private void createOrUpdateCardTags(Card card, Set<String> tagNames) {
         // Remove existing tags if any
         cardTagMapRepository.deleteByCard(card);
