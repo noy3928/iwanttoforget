@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.io.IOException;
@@ -112,7 +115,11 @@ public class CardService {
 
         try {
             SearchRequestDTO searchRequestDTO = SearchRequestDTO.of("cards", query, Card.class, Arrays.asList("question", "answer", "tags"));
-            List<Card> cards = (List<Card>) elasticSearchService.searchDocuments(searchRequestDTO);
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
+                    .must(QueryBuilders.multiMatchQuery(query, searchRequestDTO.getFields().toArray(new String[0])))
+                    .filter(QueryBuilders.termQuery("isPublic", true));
+
+            List<Card> cards = (List<Card>) elasticSearchService.searchDocuments(searchRequestDTO, boolQueryBuilder);
             searchResults = cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
         } catch (IOException e) {
             logger.error("Failed to search cards in Elasticsearch", e);
@@ -120,6 +127,7 @@ public class CardService {
 
         return searchResults;
     }
+
 
     private Card createAndSaveCard(CardDTO cardDTO) {
         UserDetailsImpl currentUser = getCurrentAuthenticatedUserDetails();

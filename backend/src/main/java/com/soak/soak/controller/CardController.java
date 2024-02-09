@@ -71,6 +71,16 @@ public class CardController {
         }
     }
 
+    @GetMapping("/cards/search")
+    public ResponseEntity<List<CardResponseDTO>> searchCards(@RequestParam String query) {
+        try {
+            List<CardResponseDTO> cardResponseDTOs = cardService.searchCards(query);
+            return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping("/cards")
     public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardDTO cardDTO) {
         try {

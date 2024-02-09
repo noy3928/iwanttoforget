@@ -10,6 +10,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -43,19 +44,28 @@ public class ElasticSearchService {
     }
 
     public List<?> searchDocuments(SearchRequestDTO searchRequestDTO) throws IOException {
+        return searchDocuments(searchRequestDTO, null);
+    }
+
+    public List<?> searchDocuments(SearchRequestDTO searchRequestDTO, BoolQueryBuilder boolQueryBuilder) throws IOException {
         SearchRequest searchRequest = new SearchRequest(searchRequestDTO.getIndexName());
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         QueryBuilder queryBuilder;
-        if(searchRequestDTO.getFields() != null && !searchRequestDTO.getFields().isEmpty()) {
+        if (searchRequestDTO.getFields() != null && !searchRequestDTO.getFields().isEmpty()) {
             queryBuilder = QueryBuilders.multiMatchQuery(searchRequestDTO.getQuery(), searchRequestDTO.getFields().toArray(new String[0]));
         } else {
             queryBuilder = QueryBuilders.multiMatchQuery(searchRequestDTO.getQuery());
         }
 
-        searchSourceBuilder.query(queryBuilder);
-        searchRequest.source(searchSourceBuilder);
+        if (boolQueryBuilder != null) {
+            boolQueryBuilder.must(queryBuilder);
+            searchSourceBuilder.query(boolQueryBuilder);
+        } else {
+            searchSourceBuilder.query(queryBuilder);
+        }
 
+        searchRequest.source(searchSourceBuilder);
         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
         SearchHit[] searchHits = searchResponse.getHits().getHits();
 
@@ -63,6 +73,5 @@ public class ElasticSearchService {
                 .map(hit -> objectMapper.convertValue(hit.getSourceAsMap(), searchRequestDTO.getDomain()))
                 .collect(Collectors.toList());
     }
-
 
 }
