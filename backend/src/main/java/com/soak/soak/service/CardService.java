@@ -1,7 +1,7 @@
 package com.soak.soak.service;
 
-import com.soak.soak.dto.CardDTO;
-import com.soak.soak.dto.CardResponseDTO;
+import com.soak.soak.dto.card.CardDTO;
+import com.soak.soak.dto.card.CardResponseDTO;
 import com.soak.soak.model.*;
 import com.soak.soak.repository.*;
 import com.soak.soak.security.services.UserDetailsImpl;

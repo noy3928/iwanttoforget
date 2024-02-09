@@ -1,4 +1,4 @@
-package com.soak.soak.dto;
+package com.soak.soak.dto.card;
 
 import lombok.Getter;
 import lombok.Setter;

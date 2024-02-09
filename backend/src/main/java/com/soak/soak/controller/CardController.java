@@ -1,7 +1,7 @@
 package com.soak.soak.controller;
 
-import com.soak.soak.dto.CardDTO;
-import com.soak.soak.dto.CardResponseDTO;
+import com.soak.soak.dto.card.CardDTO;
+import com.soak.soak.dto.card.CardResponseDTO;
 import com.soak.soak.repository.CardRepository;
 import com.soak.soak.repository.CardTagMapRepository;
 import com.soak.soak.repository.TagRepository;
