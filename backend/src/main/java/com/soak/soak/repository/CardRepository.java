@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface CardRepository extends JpaRepository<Card, UUID> {
     List<Card> findByUserIdAndIsPublic(UUID userId, boolean isPublic);
+    List<Card> findByUserId(UUID userId);
 }
