@@ -2,16 +2,12 @@ package com.soak.soak.service;
 
 import com.soak.soak.dto.CardDTO;
 import com.soak.soak.dto.CardResponseDTO;
-import com.soak.soak.model.Card;
-import com.soak.soak.model.CardTagMap;
-import com.soak.soak.model.Tag;
-import com.soak.soak.model.User;
-import com.soak.soak.repository.CardRepository;
-import com.soak.soak.repository.CardTagMapRepository;
-import com.soak.soak.repository.TagRepository;
-import com.soak.soak.repository.UserRepository;
+import com.soak.soak.model.*;
+import com.soak.soak.repository.*;
 import com.soak.soak.security.services.UserDetailsImpl;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +31,17 @@ public class CardService {
     private CardTagMapRepository cardTagMapRepository;
 
     @Autowired
+    private UserCardCopyRepository userCardCopyRepository;
+
+    @Autowired
     private AuthService authService;
+
+    private static final Logger logger = LoggerFactory.getLogger(CardService.class);
 
     @Transactional
     public CardResponseDTO createCard(CardDTO cardDTO) {
+        logger.info("Creating card with data: {}", cardDTO.toString());
+
         UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
         User user = userRepository.findById(currentUser.getId()).orElseThrow(
                 () -> new EntityNotFoundException("User not found")
@@ -86,6 +89,69 @@ public class CardService {
         cardRepository.delete(card);
     }
 
+
+    @Transactional
+    public CardResponseDTO copyCard(UUID cardId) {
+        User user = getUserEntity();
+        Card originalCard = getPublicCardById(cardId);
+
+        validateCardCopy(originalCard, user);
+
+        Card copiedCard = copyCardDetails(originalCard, user);
+        copiedCard = cardRepository.save(copiedCard);
+
+        copyCardTags(originalCard, copiedCard);
+        recordCardCopy(originalCard, user);
+
+        return convertCardToCardResponseDTO(copiedCard);
+    }
+
+    private UserDetailsImpl getCurrentUser() {
+        return authService.getCurrentAuthenticatedUserDetails();
+    }
+
+    private User getUserEntity() {
+        UserDetailsImpl currentUserDetails = getCurrentUser();
+        return userRepository.findById(currentUserDetails.getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
+
+    private Card getPublicCardById(UUID cardId) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new EntityNotFoundException("Card not found with id: " + cardId));
+        if (!card.isPublic()) {
+            throw new IllegalArgumentException("Cannot copy a private card");
+        }
+        return card;
+    }
+
+    private void validateCardCopy(Card card, User currentUser) {
+        if (card.getUser().getId().equals(currentUser.getId())) {
+            throw new IllegalArgumentException("Cannot copy own card");
+        }
+    }
+
+    private Card copyCardDetails(Card originalCard, User currentUser) {
+        Card copiedCard = new Card();
+        copiedCard.setQuestion(originalCard.getQuestion());
+        copiedCard.setAnswer(originalCard.getAnswer());
+        copiedCard.setPublic(false);
+        copiedCard.setUser(currentUser);
+        return copiedCard;
+    }
+
+    private void copyCardTags(Card originalCard, Card copiedCard) {
+        createOrUpdateCardTags(copiedCard, getTagNamesForCard(originalCard));
+    }
+
+    private void recordCardCopy(Card originalCard, User currentUser){
+        UserCardCopy userCardCopy = new UserCardCopy();
+        userCardCopy.setUser(currentUser);
+        userCardCopy.setCard(originalCard);
+        userCardCopyRepository.save(userCardCopy);
+    }
+
+
     // CardService 클래스 내의 수정된 getCardById 메서드
     public CardResponseDTO getCardById(UUID id) {
         Card card = cardRepository.findById(id)
@@ -95,7 +161,14 @@ public class CardService {
 
 
     public List<CardResponseDTO> getAllCards() {
-        List<Card> cards = cardRepository.findAll();
+        // 현재 인증된 사용자의 정보 가져오기
+        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
+        UUID userId = currentUser.getId();
+
+        // 해당 사용자의 모든 카드 조회
+        List<Card> cards = cardRepository.findByUserId(userId);
+
+        // DTO로 변환하여 반환
         return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
     }
 
