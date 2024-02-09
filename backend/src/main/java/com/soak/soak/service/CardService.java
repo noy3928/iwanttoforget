@@ -2,6 +2,8 @@ package com.soak.soak.service;
 
 import com.soak.soak.dto.card.CardDTO;
 import com.soak.soak.dto.card.CardResponseDTO;
+import com.soak.soak.dto.elasticSearch.IndexRequestDTO;
+import com.soak.soak.dto.elasticSearch.SearchRequestDTO;
 import com.soak.soak.model.*;
 import com.soak.soak.repository.*;
 import com.soak.soak.security.services.UserDetailsImpl;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.io.IOException;
 
 @Service
 public class CardService {
@@ -36,26 +39,24 @@ public class CardService {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private ElasticSearchService elasticSearchService;
+
     private static final Logger logger = LoggerFactory.getLogger(CardService.class);
+
+    public List<CardResponseDTO> getAllCards() {
+        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
+        UUID userId = currentUser.getId();
+
+        List<Card> cards = cardRepository.findByUserId(userId);
+
+        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
+    }
 
     @Transactional
     public CardResponseDTO createCard(CardDTO cardDTO) {
-        logger.info("Creating card with data: {}", cardDTO.toString());
-
-        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
-        User user = userRepository.findById(currentUser.getId()).orElseThrow(
-                () -> new EntityNotFoundException("User not found")
-        );
-
-        Card card = new Card();
-        card.setQuestion(cardDTO.getQuestion());
-        card.setAnswer(cardDTO.getAnswer());
-        card.setPublic(cardDTO.isPublic());
-        card.setUser(user);
-        card = cardRepository.save(card);
-
-        createOrUpdateCardTags(card, cardDTO.getTags());
-
+        Card card = createAndSaveCard(cardDTO);
+        indexCardInElasticsearch(card);
         return convertCardToCardResponseDTO(card);
     }
 
@@ -105,6 +106,56 @@ public class CardService {
 
         return convertCardToCardResponseDTO(copiedCard);
     }
+
+    public List<CardResponseDTO> searchCards(String query) {
+        List<CardResponseDTO> searchResults = new ArrayList<>();
+
+        try {
+            SearchRequestDTO searchRequestDTO = SearchRequestDTO.of("cards", query, Card.class, Arrays.asList("question", "answer", "tags"));
+            List<Card> cards = (List<Card>) elasticSearchService.searchDocuments(searchRequestDTO);
+            searchResults = cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
+        } catch (IOException e) {
+            logger.error("Failed to search cards in Elasticsearch", e);
+        }
+
+        return searchResults;
+    }
+
+    private Card createAndSaveCard(CardDTO cardDTO) {
+        UserDetailsImpl currentUser = getCurrentAuthenticatedUserDetails();
+        User user = getUserById(currentUser.getId());
+
+        Card card = new Card();
+        card.setQuestion(cardDTO.getQuestion());
+        card.setAnswer(cardDTO.getAnswer());
+        card.setPublic(cardDTO.isPublic());
+        card.setUser(user);
+        card = cardRepository.save(card);
+        createOrUpdateCardTags(card, cardDTO.getTags());
+
+        return card;
+    }
+
+    private void indexCardInElasticsearch(Card card) {
+        try {
+            IndexRequestDTO<Card> indexRequestDTO = IndexRequestDTO.of("cards", card.getId().toString(), card);
+            elasticSearchService.indexDocument(indexRequestDTO);
+        } catch (IOException e) {
+            logger.error("Failed to index card in Elasticsearch", e);
+            // Optional: Handle this error appropriately.
+        }
+    }
+
+    private UserDetailsImpl getCurrentAuthenticatedUserDetails() {
+        return authService.getCurrentAuthenticatedUserDetails();
+    }
+
+    private User getUserById(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("User not found")
+        );
+    }
+
 
     private UserDetailsImpl getCurrentUser() {
         return authService.getCurrentAuthenticatedUserDetails();
@@ -160,17 +211,7 @@ public class CardService {
     }
 
 
-    public List<CardResponseDTO> getAllCards() {
-        // 현재 인증된 사용자의 정보 가져오기
-        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
-        UUID userId = currentUser.getId();
 
-        // 해당 사용자의 모든 카드 조회
-        List<Card> cards = cardRepository.findByUserId(userId);
-
-        // DTO로 변환하여 반환
-        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
-    }
 
     public List<CardResponseDTO> getCardsByUserId(UUID userId) {
         List<Card> cards = cardRepository.findByUserIdAndIsPublic(userId, true);
