@@ -1,19 +1,22 @@
 package com.soak.soak.config;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.RestClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
 
 @Configuration
 public class ElasticsearchConfig {
-    @Bean
-    public RestHighLevelClient restHighLevelClient() {
-        // Elasticsearch 호스트와 포트를 지정합니다.
-        RestClientBuilder builder = RestClient.builder(
-                new HttpHost("localhost", 9200, "http"));
 
-        return new RestHighLevelClient(builder);
+    @Bean
+    public ElasticsearchClient elasticsearchClient() {
+        RestClient restClient = RestClient.builder(
+                new HttpHost("elasticsearch", 9200, "http")).build();
+        RestClientTransport transport = new RestClientTransport(
+                restClient, new JacksonJsonpMapper());
+        return new ElasticsearchClient(transport);
     }
 }
