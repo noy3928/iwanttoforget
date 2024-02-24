@@ -1,12 +1,14 @@
 package com.soak.soak.service;
 
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 import com.soak.soak.dto.card.CardDTO;
 import com.soak.soak.dto.card.CardResponseDTO;
 import com.soak.soak.dto.elasticSearch.IndexRequestDTO;
-import com.soak.soak.dto.elasticSearch.SearchRequestDTO;
 import com.soak.soak.model.*;
 import com.soak.soak.repository.*;
 import com.soak.soak.security.services.UserDetailsImpl;
+import com.soak.soak.service.card.query.CardQueryBuilder;
+import com.soak.soak.service.elasticSearch.ElasticSearchService;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.io.IOException;
 
@@ -114,12 +114,8 @@ public class CardService {
         List<CardResponseDTO> searchResults = new ArrayList<>();
 
         try {
-            SearchRequestDTO searchRequestDTO = SearchRequestDTO.of("cards", query, Card.class, Arrays.asList("question", "answer", "tags"));
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.multiMatchQuery(query, searchRequestDTO.getFields().toArray(new String[0])))
-                    .filter(QueryBuilders.termQuery("isPublic", true));
-
-            List<Card> cards = (List<Card>) elasticSearchService.searchDocuments(searchRequestDTO, boolQueryBuilder);
+            Function<SearchRequest.Builder, SearchRequest.Builder> queryCustomizer = CardQueryBuilder.buildCardQuery(query, true);
+            List<Card> cards = elasticSearchService.searchDocuments("cards", Card.class, queryCustomizer);
             searchResults = cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
         } catch (IOException e) {
             logger.error("Failed to search cards in Elasticsearch", e);
@@ -127,6 +123,7 @@ public class CardService {
 
         return searchResults;
     }
+
 
 
     private Card createAndSaveCard(CardDTO cardDTO) {
