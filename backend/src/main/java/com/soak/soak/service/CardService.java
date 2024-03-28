@@ -5,7 +5,6 @@ import com.soak.soak.dto.card.CardResponseDTO;
 import com.soak.soak.model.*;
 import com.soak.soak.repository.*;
 import com.soak.soak.security.services.UserDetailsImpl;
-import com.soak.soak.service.card.query.CardQueryBuilder;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.io.IOException;
 
 @Service
 public class CardService {
@@ -53,7 +51,6 @@ public class CardService {
     @Transactional
     public CardResponseDTO createCard(CardDTO cardDTO) {
         Card card = createAndSaveCard(cardDTO);
-        indexCardInElasticsearch(card);
         return convertCardToCardResponseDTO(card);
     }
 
@@ -105,14 +102,10 @@ public class CardService {
     }
 
     public List<CardResponseDTO> searchCards(String query) {
-        List<CardResponseDTO> searchResults = new ArrayList<>();
-
-        try {
-        } catch (IOException e) {
-            logger.error("Failed to search cards in Elasticsearch", e);
-        }
-
-        return searchResults;
+        List<Card> cards = cardRepository.searchCards(query); // Elasticsearch 관련 코드 제거로 인해 IOException 발생하지 않음
+        return cards.stream()
+                .map(this::convertCardToCardResponseDTO)
+                .collect(Collectors.toList());
     }
 
 
@@ -132,13 +125,6 @@ public class CardService {
         return card;
     }
 
-    private void indexCardInElasticsearch(Card card) {
-        try {
-        } catch (IOException e) {
-            logger.error("Failed to index card in Elasticsearch", e);
-            // Optional: Handle this error appropriately.
-        }
-    }
 
     private UserDetailsImpl getCurrentAuthenticatedUserDetails() {
         return authService.getCurrentAuthenticatedUserDetails();
@@ -149,7 +135,6 @@ public class CardService {
                 () -> new EntityNotFoundException("User not found")
         );
     }
-
 
     private UserDetailsImpl getCurrentUser() {
         return authService.getCurrentAuthenticatedUserDetails();
@@ -196,16 +181,12 @@ public class CardService {
         userCardCopyRepository.save(userCardCopy);
     }
 
-
     // CardService 클래스 내의 수정된 getCardById 메서드
     public CardResponseDTO getCardById(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Card not found with id: " + id));
         return convertCardToCardResponseDTO(card);
     }
-
-
-
 
     public List<CardResponseDTO> getCardsByUserId(UUID userId) {
         List<Card> cards = cardRepository.findByUserIdAndIsPublic(userId, true);
