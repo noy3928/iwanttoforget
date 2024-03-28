@@ -26,6 +26,11 @@ public class JwtUtils {
 
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
+        logger.info("Generating JWT token at: {} with expiration: {}", now, expiryDate);
+
 
         // JWT 토큰의 'subject'로 사용자의 이메일을 사용합니다.
         return Jwts.builder()

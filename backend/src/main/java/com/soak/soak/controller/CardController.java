@@ -1,7 +1,7 @@
 package com.soak.soak.controller;
 
-import com.soak.soak.dto.CardDTO;
-import com.soak.soak.dto.CardResponseDTO;
+import com.soak.soak.dto.card.CardDTO;
+import com.soak.soak.dto.card.CardResponseDTO;
 import com.soak.soak.repository.CardRepository;
 import com.soak.soak.repository.CardTagMapRepository;
 import com.soak.soak.repository.TagRepository;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/api")
 public class CardController {
@@ -71,12 +71,28 @@ public class CardController {
         }
     }
 
+    @GetMapping("/cards/search")
+    public ResponseEntity<List<CardResponseDTO>> searchCards(@RequestParam String query) {
+        try {
+            List<CardResponseDTO> cardResponseDTOs = cardService.searchCards(query);
+            return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error searching cards with query: {}", query, e);
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping("/cards")
     public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardDTO cardDTO) {
         try {
             CardResponseDTO cardResponseDTO = cardService.createCard(cardDTO);
             return new ResponseEntity<>(cardResponseDTO, HttpStatus.CREATED);
         } catch (Exception e) {
+            logger.error("Error creating card with question: {}", cardDTO.getQuestion(), e);
+            logger.error("Error creating card with answer: {}", cardDTO.getAnswer(), e);
+            logger.error("Error creating card with tags: {}", cardDTO.getTags(), e);
+            logger.error("Error creating card with isPublic: {}", cardDTO.isPublic(), e);
+
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

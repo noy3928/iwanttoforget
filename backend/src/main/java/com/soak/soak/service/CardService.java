@@ -1,7 +1,7 @@
 package com.soak.soak.service;
 
-import com.soak.soak.dto.CardDTO;
-import com.soak.soak.dto.CardResponseDTO;
+import com.soak.soak.dto.card.CardDTO;
+import com.soak.soak.dto.card.CardResponseDTO;
 import com.soak.soak.model.*;
 import com.soak.soak.repository.*;
 import com.soak.soak.security.services.UserDetailsImpl;
@@ -36,26 +36,21 @@ public class CardService {
     @Autowired
     private AuthService authService;
 
+
     private static final Logger logger = LoggerFactory.getLogger(CardService.class);
+
+    public List<CardResponseDTO> getAllCards() {
+        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
+        UUID userId = currentUser.getId();
+
+        List<Card> cards = cardRepository.findByUserId(userId);
+
+        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
+    }
 
     @Transactional
     public CardResponseDTO createCard(CardDTO cardDTO) {
-        logger.info("Creating card with data: {}", cardDTO.toString());
-
-        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
-        User user = userRepository.findById(currentUser.getId()).orElseThrow(
-                () -> new EntityNotFoundException("User not found")
-        );
-
-        Card card = new Card();
-        card.setQuestion(cardDTO.getQuestion());
-        card.setAnswer(cardDTO.getAnswer());
-        card.setPublic(cardDTO.isPublic());
-        card.setUser(user);
-        card = cardRepository.save(card);
-
-        createOrUpdateCardTags(card, cardDTO.getTags());
-
+        Card card = createAndSaveCard(cardDTO);
         return convertCardToCardResponseDTO(card);
     }
 
@@ -106,6 +101,41 @@ public class CardService {
         return convertCardToCardResponseDTO(copiedCard);
     }
 
+    public List<CardResponseDTO> searchCards(String query) {
+        List<Card> cards = cardRepository.searchCards(query); // Elasticsearch 관련 코드 제거로 인해 IOException 발생하지 않음
+        return cards.stream()
+                .map(this::convertCardToCardResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+
+
+    private Card createAndSaveCard(CardDTO cardDTO) {
+        UserDetailsImpl currentUser = getCurrentAuthenticatedUserDetails();
+        User user = getUserById(currentUser.getId());
+
+        Card card = new Card();
+        card.setQuestion(cardDTO.getQuestion());
+        card.setAnswer(cardDTO.getAnswer());
+        card.setPublic(cardDTO.isPublic());
+        card.setUser(user);
+        card = cardRepository.save(card);
+        createOrUpdateCardTags(card, cardDTO.getTags());
+
+        return card;
+    }
+
+
+    private UserDetailsImpl getCurrentAuthenticatedUserDetails() {
+        return authService.getCurrentAuthenticatedUserDetails();
+    }
+
+    private User getUserById(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("User not found")
+        );
+    }
+
     private UserDetailsImpl getCurrentUser() {
         return authService.getCurrentAuthenticatedUserDetails();
     }
@@ -151,25 +181,11 @@ public class CardService {
         userCardCopyRepository.save(userCardCopy);
     }
 
-
     // CardService 클래스 내의 수정된 getCardById 메서드
     public CardResponseDTO getCardById(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Card not found with id: " + id));
         return convertCardToCardResponseDTO(card);
-    }
-
-
-    public List<CardResponseDTO> getAllCards() {
-        // 현재 인증된 사용자의 정보 가져오기
-        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
-        UUID userId = currentUser.getId();
-
-        // 해당 사용자의 모든 카드 조회
-        List<Card> cards = cardRepository.findByUserId(userId);
-
-        // DTO로 변환하여 반환
-        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
     }
 
     public List<CardResponseDTO> getCardsByUserId(UUID userId) {
