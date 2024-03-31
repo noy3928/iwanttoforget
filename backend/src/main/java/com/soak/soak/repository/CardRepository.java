@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface CardRepository extends JpaRepository<Card, UUID> {
@@ -19,4 +20,7 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
             "OR LOWER(c.answer) LIKE LOWER(CONCAT('%', :query, '%')) " +
             "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%'))")
     List<Card> searchCards(@Param("query") String query);
+
+    @Query("SELECT c FROM Card c WHERE c.id IN :cardIds AND c.user.id = :userId")
+    List<Card> findAllByIdAndUserId(@Param("cardIds") Set<UUID> cardIds, @Param("userId") UUID userId);
 }

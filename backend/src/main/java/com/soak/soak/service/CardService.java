@@ -48,6 +48,17 @@ public class CardService {
         return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
     }
 
+    public List<CardResponseDTO> getCardsByTag(String tag) {
+        UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
+        UUID userId = currentUser.getId();
+
+        Set<UUID> cardIdsByTag = cardTagMapRepository.findCardIdsByTagName(tag.toLowerCase());
+        List<Card> cards = cardRepository.findAllByIdAndUserId(cardIdsByTag, userId);
+
+        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
+    }
+
+
     @Transactional
     public CardResponseDTO createCard(CardDTO cardDTO) {
         Card card = createAndSaveCard(cardDTO);

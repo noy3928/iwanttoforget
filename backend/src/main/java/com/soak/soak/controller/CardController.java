@@ -40,9 +40,14 @@ public class CardController {
     private static final Logger logger = LoggerFactory.getLogger(CardController.class);
 
     @GetMapping("/cards")
-    public ResponseEntity<List<CardResponseDTO>> getCards() {
+    public ResponseEntity<List<CardResponseDTO>> getCards(@RequestParam Optional<String> tag) {
         try {
-            List<CardResponseDTO> cardResponseDTOs = cardService.getAllCards();
+            List<CardResponseDTO> cardResponseDTOs;
+            if (tag.isPresent()) {
+                cardResponseDTOs = cardService.getCardsByTag(tag.get());
+            } else {
+                cardResponseDTOs = cardService.getAllCards();
+            }
             return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
