@@ -4,6 +4,7 @@ import com.soak.soak.dto.card.CardDTO;
 import com.soak.soak.dto.card.CardResponseDTO;
 
 
+import com.soak.soak.exception.CustomException;
 import com.soak.soak.repository.CardRepository;
 import com.soak.soak.repository.CardTagMapRepository;
 import com.soak.soak.repository.TagRepository;
@@ -156,10 +157,12 @@ public class CardController {
     }
 
     @PutMapping("/cards/{id}")
-    public ResponseEntity<CardResponseDTO> updateCard(@PathVariable UUID id, @RequestBody CardDTO cardDTO) {
+    public ResponseEntity<Object> updateCard(@PathVariable UUID id, @RequestBody CardDTO cardDTO) {
         try {
             CardResponseDTO updatedCardResponseDTO = cardService.updateCard(id, cardDTO);
             return new ResponseEntity<>(updatedCardResponseDTO, HttpStatus.OK);
+        }catch (CustomException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getHttpStatus());
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
@@ -167,6 +170,8 @@ public class CardController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 
     @DeleteMapping("/cards/{id}")
     public ResponseEntity<Void> deleteCard(@PathVariable UUID id) {

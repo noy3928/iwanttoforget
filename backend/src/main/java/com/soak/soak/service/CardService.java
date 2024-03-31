@@ -3,6 +3,7 @@ package com.soak.soak.service;
 import com.soak.soak.dto.card.CardDTO;
 import com.soak.soak.dto.card.CardResponseDTO;
 import com.soak.soak.dto.card.PagedResponse;
+import com.soak.soak.exception.CustomException;
 import com.soak.soak.model.*;
 import com.soak.soak.repository.*;
 import com.soak.soak.security.services.UserDetailsImpl;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,9 +90,14 @@ public class CardService {
         User user = userRepository.findById(currentUser.getId()).orElseThrow(
                 () -> new EntityNotFoundException("User not found")
         );
+        UUID userId = currentUser.getId();
 
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found with id: " + id));
+
+        if (!card.getUser().getId().equals(userId)) {
+            throw new CustomException("You do not have permission to update this card.", HttpStatus.BAD_REQUEST);
+        }
 
         card.setQuestion(cardDTO.getQuestion());
         card.setAnswer(cardDTO.getAnswer());
