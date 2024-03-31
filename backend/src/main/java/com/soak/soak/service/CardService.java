@@ -2,6 +2,7 @@ package com.soak.soak.service;
 
 import com.soak.soak.dto.card.CardDTO;
 import com.soak.soak.dto.card.CardResponseDTO;
+import com.soak.soak.dto.card.PagedResponse;
 import com.soak.soak.model.*;
 import com.soak.soak.repository.*;
 import com.soak.soak.security.services.UserDetailsImpl;
@@ -45,7 +46,13 @@ public class CardService {
         UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
         UUID userId = currentUser.getId();
 
+        logger.info("User ID: " + userId);
+        logger.debug("Fetching cards with pageable: page number = {}, page size = {}", pageable.getPageNumber(), pageable.getPageSize());
+
         Page<Card> cards = cardRepository.findByUserId(userId, pageable);
+
+        logger.debug("Fetched {} cards, Total elements = {}, Total pages = {}", cards.getContent().size(), cards.getTotalElements(), cards.getTotalPages());
+
 
         return cards.map(this::convertCardToCardResponseDTO);
     }
@@ -59,6 +66,14 @@ public class CardService {
 
         return cards.map(this::convertCardToCardResponseDTO);
     }
+
+    public Page<CardResponseDTO> getPublicCardsByTagAndUserId(UUID userId, String tag, Pageable pageable) {
+        Set<UUID> cardIdsByTag = cardTagMapRepository.findCardIdsByTagName(tag.toLowerCase());
+        Page<Card> cardsPage = cardRepository.findAllByIdInAndUserIdAndIsPublic(cardIdsByTag, userId, true, pageable);
+
+        return cardsPage.map(this::convertCardToCardResponseDTO);
+    }
+
 
 
     @Transactional
@@ -194,16 +209,15 @@ public class CardService {
         userCardCopyRepository.save(userCardCopy);
     }
 
-    // CardService 클래스 내의 수정된 getCardById 메서드
     public CardResponseDTO getCardById(UUID id) {
         Card card = cardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Card not found with id: " + id));
         return convertCardToCardResponseDTO(card);
     }
 
-    public List<CardResponseDTO> getCardsByUserId(UUID userId) {
-        List<Card> cards = cardRepository.findByUserIdAndIsPublic(userId, true);
-        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
+    public Page<CardResponseDTO> getCardsByUserId(UUID userId, Pageable pageable) {
+        Page<Card> cards = cardRepository.findByUserIdAndIsPublic(userId, true, pageable);
+        return cards.map(this::convertCardToCardResponseDTO);
     }
 
     private void createOrUpdateCardTags(Card card, Set<String> tagNames) {

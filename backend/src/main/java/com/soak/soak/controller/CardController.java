@@ -75,10 +75,29 @@ public class CardController {
 
 
     @GetMapping("/cards/user/{userId}")
-    public ResponseEntity<List<CardResponseDTO>> getCardsByUserId(@PathVariable UUID userId) {
+    public ResponseEntity<PagedResponse<CardResponseDTO>> getCardsByUserId(@PathVariable UUID userId,
+                                                                           @RequestParam Optional<String> tag,
+                                                                           @RequestParam(defaultValue = "0") int page,
+                                                                           @RequestParam(defaultValue = "10") int size) {
         try {
-            List<CardResponseDTO> cardResponseDTOs = cardService.getCardsByUserId(userId);
-            return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
+            Page<CardResponseDTO> pageCards;
+
+            if (tag.isPresent()) {
+                pageCards = cardService.getPublicCardsByTagAndUserId(userId, tag.get(), PageRequest.of(page, size));
+            } else {
+                pageCards = cardService.getCardsByUserId(userId, PageRequest.of(page, size));
+            }
+
+            PageInfo pageInfo = new PageInfo(
+                    pageCards.getNumber(),
+                    pageCards.getSize(),
+                    pageCards.getTotalElements(),
+                    pageCards.getTotalPages()
+            );
+
+            PagedResponse<CardResponseDTO> response = new PagedResponse<>(pageInfo, pageCards.getContent());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
