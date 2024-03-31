@@ -9,6 +9,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,23 +41,23 @@ public class CardService {
 
     private static final Logger logger = LoggerFactory.getLogger(CardService.class);
 
-    public List<CardResponseDTO> getAllCards() {
+    public Page<CardResponseDTO> getAllCards(Pageable pageable) {
         UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
         UUID userId = currentUser.getId();
 
-        List<Card> cards = cardRepository.findByUserId(userId);
+        Page<Card> cards = cardRepository.findByUserId(userId, pageable);
 
-        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
+        return cards.map(this::convertCardToCardResponseDTO);
     }
 
-    public List<CardResponseDTO> getCardsByTag(String tag) {
+    public Page<CardResponseDTO> getCardsByTag(String tag, Pageable pageable) {
         UserDetailsImpl currentUser = authService.getCurrentAuthenticatedUserDetails();
         UUID userId = currentUser.getId();
 
         Set<UUID> cardIdsByTag = cardTagMapRepository.findCardIdsByTagName(tag.toLowerCase());
-        List<Card> cards = cardRepository.findAllByIdAndUserId(cardIdsByTag, userId);
+        Page<Card> cards = cardRepository.findAllByIdAndUserId(cardIdsByTag, userId, pageable);
 
-        return cards.stream().map(this::convertCardToCardResponseDTO).collect(Collectors.toList());
+        return cards.map(this::convertCardToCardResponseDTO);
     }
 
 

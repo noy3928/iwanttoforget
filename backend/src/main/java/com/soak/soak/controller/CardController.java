@@ -2,6 +2,8 @@ package com.soak.soak.controller;
 
 import com.soak.soak.dto.card.CardDTO;
 import com.soak.soak.dto.card.CardResponseDTO;
+
+
 import com.soak.soak.repository.CardRepository;
 import com.soak.soak.repository.CardTagMapRepository;
 import com.soak.soak.repository.TagRepository;
@@ -14,6 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.soak.soak.model.PageInfo;
+import com.soak.soak.dto.card.PagedResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 
 import java.util.*;
 
@@ -40,19 +48,31 @@ public class CardController {
     private static final Logger logger = LoggerFactory.getLogger(CardController.class);
 
     @GetMapping("/cards")
-    public ResponseEntity<List<CardResponseDTO>> getCards(@RequestParam Optional<String> tag) {
+    public ResponseEntity<PagedResponse<CardResponseDTO>> getCards(@RequestParam Optional<String> tag,
+                                                                   @RequestParam(defaultValue = "0") int page,
+                                                                   @RequestParam(defaultValue = "10") int size) {
         try {
-            List<CardResponseDTO> cardResponseDTOs;
+            Page<CardResponseDTO> pageCards;
             if (tag.isPresent()) {
-                cardResponseDTOs = cardService.getCardsByTag(tag.get());
+                pageCards = cardService.getCardsByTag(tag.get(), PageRequest.of(page, size));
             } else {
-                cardResponseDTOs = cardService.getAllCards();
+                pageCards = cardService.getAllCards(PageRequest.of(page, size));
             }
-            return new ResponseEntity<>(cardResponseDTOs, HttpStatus.OK);
+
+            PageInfo pageInfo = new PageInfo(
+                    pageCards.getNumber(),
+                    pageCards.getSize(),
+                    pageCards.getTotalElements(),
+                    pageCards.getTotalPages()
+            );
+
+            PagedResponse<CardResponseDTO> response = new PagedResponse<>(pageInfo, pageCards.getContent());
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @GetMapping("/cards/user/{userId}")
     public ResponseEntity<List<CardResponseDTO>> getCardsByUserId(@PathVariable UUID userId) {
